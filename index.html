@@ -13,7 +13,8 @@
   <meta name="description" content="A calm, quiet personal companion for Scripture, Prayer, Meditation, and Daily Intention.">
 
   <!-- Embedded Web App Manifest via Data URI -->
-  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22OneDay%20Practice%22%2C%22short_name%22%3A%22OneDay%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23181716%22%2C%22theme_color%22%3A%22%23181716%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20100%20100'%3E%3Ccircle%20cx%3D'50'%20cy%3D'50'%20r%3D'40'%20fill%3D'%23c4a47c'%2F%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22OneDay%20Practice%22%2C%22short_name%22%3A%22OneDay%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23181716%22%2C%22theme_color%22%3A%22%23181716%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22apple-touch-icon.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
   <style>
     :root {
@@ -190,7 +191,7 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      padding: 15px 18px;
+      padding: 14px 18px;
       font-size: 0.98rem;
       font-weight: 500;
       border-radius: var(--radius);
@@ -199,6 +200,7 @@
       transition: var(--trans);
       text-decoration: none;
       text-align: center;
+      white-space: nowrap;
     }
 
     .btn-primary {
@@ -284,6 +286,7 @@
       font-size: 1.02rem;
     }
 
+    /* Dual Stage & Cumulative Live Timer Cluster */
     .stage-header-bar {
       display: flex;
       justify-content: space-between;
@@ -291,51 +294,74 @@
       margin-bottom: 16px;
       padding-bottom: 12px;
       border-bottom: 1px solid var(--border);
+      gap: 6px;
     }
 
     .stage-chip {
       font-size: 0.78rem;
-      padding: 5px 12px;
+      padding: 5px 10px;
       border-radius: 20px;
       background: var(--accent-soft);
       color: var(--text-main);
       font-weight: 500;
       letter-spacing: 0.03em;
       text-transform: uppercase;
+      white-space: nowrap;
     }
 
     .stage-live-timer {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.92rem;
+      font-size: 0.84rem;
       font-weight: 600;
       font-variant-numeric: tabular-nums;
-      color: var(--accent);
+      color: var(--text-main);
       background: var(--card-bg);
-      padding: 5px 12px;
+      padding: 4px 10px;
       border-radius: 20px;
       border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .timer-stage-badge {
+      color: var(--accent);
+    }
+
+    .timer-divider {
+      color: var(--border);
+      font-weight: normal;
+    }
+
+    .timer-total-badge {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .timer-total-badge strong {
+      color: var(--text-main);
     }
 
     .stage-exit-btn {
       background: none;
       border: none;
       color: var(--danger);
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       cursor: pointer;
       font-weight: 500;
-      padding: 6px 8px;
+      padding: 6px 4px;
+      white-space: nowrap;
     }
 
     .stage-back-btn {
       background: none;
       border: none;
       color: var(--text-muted);
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       cursor: pointer;
       font-weight: 500;
-      padding: 6px 8px;
+      padding: 6px 4px;
+      white-space: nowrap;
     }
 
     .stage-back-btn:hover {
@@ -369,16 +395,46 @@
       border-color: var(--text-main);
     }
 
+    .reading-tab-btn.patristic-tab {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .reading-tab-btn.patristic-tab.active {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+
+    /* Top Action Bar for Scripture Audio & Source */
+    .reading-top-toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      margin: 10px 0 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .reading-top-toolbar .btn-secondary {
+      padding: 9px 14px;
+      font-size: 0.88rem;
+      border-radius: 20px;
+      width: auto;
+      flex: 1;
+    }
+
     .reading-content-container {
-      margin: 16px 0 24px;
+      margin: 14px 0 24px;
       user-select: text;
       -webkit-user-select: text;
-      line-height: 1.85;
+      line-height: 1.9;
     }
 
     .reading-citation {
       font-family: var(--font-sans);
-      font-size: 0.86rem;
+      font-size: 0.88rem;
       font-weight: 700;
       color: var(--accent);
       margin-bottom: 8px;
@@ -388,19 +444,19 @@
 
     .reading-theme {
       font-family: var(--font-serif);
-      font-size: 1.05rem;
+      font-size: 1.08rem;
       font-style: italic;
       color: var(--accent);
-      margin-bottom: 16px;
-      line-height: 1.6;
+      margin-bottom: 18px;
+      line-height: 1.65;
     }
 
     .reading-para {
       font-family: var(--font-serif);
       font-size: 1.08rem;
-      line-height: 1.85;
+      line-height: 1.9;
       color: var(--text-main);
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
       letter-spacing: 0.01em;
     }
 
@@ -414,20 +470,127 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: var(--accent);
-      margin: 14px 0 8px;
+      margin: 16px 0 8px;
       font-weight: 600;
     }
 
-    .reading-response {
+    /* Responsorial Psalm Refrain Styling */
+    .psalm-refrain-box {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 12px 14px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin: 16px 0 18px;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .psalm-refrain-symbol {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: var(--accent);
+      user-select: none;
+    }
+
+    .psalm-refrain-text {
       font-family: var(--font-serif);
       font-style: italic;
       color: var(--accent);
-      padding: 10px 14px;
+      line-height: 1.65;
+      font-size: 1.02rem;
+    }
+
+    .psalm-stanza {
+      font-family: var(--font-serif);
+      font-size: 1.06rem;
+      line-height: 1.85;
+      color: var(--text-main);
+      padding-left: 14px;
+      border-left: 1.5px solid var(--border);
+      margin-bottom: 1.4rem;
+    }
+
+    /* Pocket Anchor Card & Selector */
+    .pocket-anchor-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      transition: var(--trans);
+    }
+
+    .pocket-anchor-badge {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .pocket-anchor-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .pocket-anchor-verse {
+      font-family: var(--font-serif);
+      font-size: 1.12rem;
+      font-style: italic;
+      line-height: 1.6;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .pocket-anchor-source {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .pocket-anchor-capture-box {
       background: var(--accent-soft);
-      border-left: 3px solid var(--accent);
-      border-radius: 0 var(--radius) var(--radius) 0;
-      margin: 14px 0 16px;
-      line-height: 1.7;
+      border: 1px dashed var(--accent);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin: 20px 0 16px;
+    }
+
+    .pocket-anchor-capture-title {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pocket-anchor-capture-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .pocket-anchor-capture-row input {
+      flex: 1;
+      padding: 9px 12px;
+      font-size: 0.94rem;
+    }
+
+    .pocket-anchor-capture-row button {
+      width: auto;
+      padding: 0 14px;
+      font-size: 0.86rem;
+      white-space: nowrap;
     }
 
     .exegesis-box {
@@ -501,6 +664,32 @@
     @keyframes pulseAnim {
       0%, 100% { opacity: 0.3; transform: scale(0.85); }
       50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    /* Fixed Intention Creator Flex Shape */
+    .intention-creator-row {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+      width: 100%;
+    }
+
+    .intention-creator-row input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .intention-creator-row .btn-add {
+      flex-shrink: 0;
+      width: auto;
+      padding: 0 20px;
+      height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
     }
 
     .intention-item {
@@ -632,6 +821,7 @@
       font-weight: bold;
     }
 
+    /* Practice Statistics Grid */
     .stats-trio {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -641,7 +831,7 @@
 
     .stat-card {
       background: var(--accent-soft);
-      padding: 16px 10px;
+      padding: 16px 8px;
       border-radius: var(--radius);
       text-align: center;
       border: 1px solid var(--border);
@@ -662,6 +852,44 @@
       letter-spacing: 0.06em;
       color: var(--text-muted);
       font-weight: 600;
+    }
+
+    .stats-comparison-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .comparison-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+
+    .comparison-title {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .comparison-val {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .comparison-sub {
+      font-size: 0.8rem;
+      font-weight: normal;
+      color: var(--text-muted);
     }
 
     nav.bottom-nav {
@@ -925,8 +1153,9 @@
     const STORAGE_KEY_SETTINGS = "oneday_cached_settings";
     const STORAGE_KEY_LAST_INTENTION = "oneday_last_chosen_intention";
     const STORAGE_KEY_TODAY_REFLECTION = "oneday_today_reflection";
-    const STORAGE_KEY_EXEGESIS_CACHE = "oneday_exegesis_cache_v3";
-    const STORAGE_KEY_READINGS_CACHE = "oneday_readings_cache_v2";
+    const STORAGE_KEY_POCKET_ANCHOR = "oneday_pocket_anchor_v1";
+    const STORAGE_KEY_EXEGESIS_CACHE = "oneday_exegesis_cache_v5";
+    const STORAGE_KEY_READINGS_CACHE = "oneday_readings_cache_v5";
 
     // Application Master State
     const AppState = {
@@ -935,6 +1164,7 @@
       currentRoute: 'today',
       isOnline: navigator.onLine,
       lastChosenIntention: localStorage.getItem(STORAGE_KEY_LAST_INTENTION) || "When I notice myself becoming impatient, I will pause, exhale, and soften my shoulders.",
+      pocketAnchor: null, // { text: '', source: '', date: '' }
       todayReflection: {
         date: new Date().toISOString().split('T')[0],
         readingRef: '',
@@ -942,6 +1172,7 @@
         q2: '',
         q3: ''
       },
+      sundayHomily: null,
       exegesisCache: {},
       pendingExegesis: {},
       isSpeakingExegesis: false,
@@ -957,6 +1188,7 @@
         personalPrayer: "A quiet moment to offer personal thanksgivings, petitions, and intentions in stillness.",
         jesusPrayer: "Lord Jesus Christ, Son of God, have mercy on me, a sinner.",
         universalisUrl: "https://universalis.com/africa.safrica/mass.htm",
+        universalisOfficeUrl: "https://universalis.com/africa.safrica/readings.htm",
         predefinedIntentions: [
           { id: 'p1', text: "When I notice myself becoming impatient, I will pause, exhale, and soften my shoulders." },
           { id: 'p2', text: "When I notice myself rushing, I will slow my pace and remember Christ is in this moment." },
@@ -973,12 +1205,12 @@
         {
           id: 'psalm',
           title: "Responsorial Psalm",
-          content: "Psalm 1:1-4,6\n\nAnyone who follows you, Lord, will have the light of life.\n\nBlessed are they who do not walk in the counsel of the wicked, nor linger in the way of sinners, nor sit in the company of the insolent, but whose delight is the law of the Lord and who ponder his law day and night.\n\nAnyone who follows you, Lord, will have the light of life.\n\nThey are like a tree planted beside flowing waters, that yields its fruit in due season, and whose leaves do not wither, and whatever they do shall prosper."
+          content: "Psalm 121(122):1-5\n\nResponse: I rejoiced when I heard them say: 'Let us go to God's house.'\n\nI rejoiced when I heard them say:\n'Let us go to God’s house.'\nAnd now our feet are standing\nwithin your gates, O Jerusalem.\n\nResponse: I rejoiced when I heard them say: 'Let us go to God's house.'\n\nJerusalem is built as a city\nstrongly compact.\nIt is there that the tribes go up,\nthe tribes of the Lord.\n\nResponse: I rejoiced when I heard them say: 'Let us go to God's house.'"
         },
         {
           id: 'gospel',
           title: "Gospel",
-          content: "Luke 11:42-46\n\nYou overlook justice and the love of God\n\nThe Lord said: 'Woe to you Pharisees! For you tithe mint and rue and every herb, and neglect justice and the love of God; these you ought to have done, without neglecting the others.\n\nWoe to you Pharisees! For you love the best seat in the synagogues and salutations in the market places. Woe to you! For you are like graves which are not seen, and men walk over them without knowing it.'\n\nOne of the lawyers answered him, 'Teacher, in saying this you reproach us also.' And he said, 'Woe to you lawyers also! For you load men with burdens hard to bear, and you yourselves do not touch the burdens with one of your fingers.'"
+          content: "Luke 13:1-9\n\n'Leave the fig tree one more year'\n\nSome people arrived and told Jesus about the Galileans whose blood Pilate had mingled with that of their sacrifices. At this he said to them, 'Do you suppose that because this befell them these Galileans were greater sinners than any other Galileans? They were not, I tell you. No; but unless you repent you will all perish as they did.'\n\nHe told this parable: 'A man had a fig tree planted in his vineyard, and he came looking for fruit on it but found none. He said to the vinedresser, 'Look here: for three years now I have been looking for fruit on this fig tree and finding none: cut it down: why should it be taking up the ground?' 'Sir,' the man replied 'leave it one more year and give me time to dig round it and manure it: it may bear fruit next year; if not, then you can cut it down.''"
         }
       ],
       currentReadingIndex: 0,
@@ -1050,7 +1282,7 @@
     }
 
     /**
-     * Web Audio singing bowl and mobile-optimised speech synthesizer
+     * Audio Service
      */
     class AudioService {
       constructor() {
@@ -1215,24 +1447,46 @@
     const sound = new AudioService();
 
     /**
-     * Screen wake lock service
+     * Resilient Screen Wake Lock Service
      */
     class WakeLockService {
       constructor() {
         this.lock = null;
+        this.isActiveRequested = false;
+        this.initVisibilityListener();
+      }
+
+      initVisibilityListener() {
+        document.addEventListener('visibilitychange', async () => {
+          if (document.visibilityState === 'visible' && this.isActiveRequested) {
+            await this.request();
+            if (AppState.activeSession) {
+              PracticeMachine.syncTimerDisplayFromTimestamps();
+            }
+          }
+        });
       }
 
       async request() {
+        this.isActiveRequested = true;
         if ('wakeLock' in navigator) {
           try {
+            if (this.lock) {
+              await this.lock.release();
+              this.lock = null;
+            }
             this.lock = await navigator.wakeLock.request('screen');
+            this.lock.addEventListener('release', () => {
+              this.lock = null;
+            });
           } catch (e) {
-            console.log("WakeLock unavailable:", e);
+            console.log("WakeLock request status:", e);
           }
         }
       }
 
       release() {
+        this.isActiveRequested = false;
         if (this.lock) {
           this.lock.release();
           this.lock = null;
@@ -1250,7 +1504,6 @@
         if (!raw) return '';
         let s = raw;
 
-        // Strip literal stray entity fragments before parsing
         s = s.replace(/&#?(8016|8216|8217|8220|8221|8211|8212);?/gi, (m, code) => {
           if (code === '8216' || code === '8016') return "'";
           if (code === '8217') return "'";
@@ -1259,7 +1512,6 @@
           return ' ';
         });
 
-        // Use DOM parser for all standard named & unicode entities
         const doc = new DOMParser().parseFromString(s, 'text/html');
         let decoded = doc.body.textContent || '';
 
@@ -1276,30 +1528,19 @@
         if (!raw) return '';
         let s = TextFormatter.decodeHtmlEntities(raw);
 
-        // Strip Gospel Acclamation completely
         s = s.replace(/Gospel Acclamation[\s\S]*?(?=(?:A reading from|The beginning of|Gospel|Luke|Matthew|Mark|John|$))/i, ' ');
         s = s.replace(/Acclamation[\s\S]*?(?=(?:Luke|Matthew|Mark|John|$))/i, ' ');
         s = s.replace(/Alleluia[^\n.]*[\n.]/gi, ' ');
+        s = s.replace(/How to listen[\s\S]*$/gi, ' ');
 
-        // Fix mashed numbers touching words: "5:18-25To" -> "5:18-25 To"
-        s = s.replace(/(\b\d+(?:[:,\-–—]\d+)*)([A-Z])/g, '$1 $2');
-        s = s.replace(/(Gospel|Psalm|Reading|Acclamation)([A-Z])/g, '$1 $2');
+        // Universal pronunciation for chapters and verses with parentheses
+        s = s.replace(/(\b[1-3]?\s?[A-Za-z]+)\s+(\d+)(?:\s*\(\d+\))?[:,\-–—](\d+)/g, '$1 chapter $2, verse $3. ');
+        s = s.replace(/\bPsalm\s+(\d+)(?:\s*\(\d+\))?[:,\-–—](\d+)/gi, 'Psalm $1, verse $2. ');
 
-        // Strip stray codes like #8016, #8216, or any #\d+
         s = s.replace(/#\d+;?/gi, ' ');
         s = s.replace(/&[a-z]+;?/gi, ' ');
-
-        // Pronunciation aids for Scripture citations:
-        // "Galatians 5:18-25" -> "Galatians chapter 5, verses 18 to 25."
-        s = s.replace(/(\b[1-3]?\s?[A-Za-z]+)\s+(\d+):(\d+)[-–—](\d+)/g, '$1 chapter $2, verses $3 to $4. ');
-        s = s.replace(/(\b[1-3]?\s?[A-Za-z]+)\s+(\d+):(\d+)/g, '$1 chapter $2, verse $3. ');
-        s = s.replace(/\bPsalm\s+(\d+):(\d+)[-–—](\d+)/gi, 'Psalm $1, verses $2 to $3. ');
-
-        // Strip verse numbers in brackets
         s = s.replace(/\(\d+[:\d\-,\s]*\)/g, ' ');
         s = s.replace(/\[\d+\]/g, ' ');
-
-        // Strip HTML tags
         s = s.replace(/<[^>]+>/g, ' ');
 
         return s.replace(/\s+/g, ' ').trim();
@@ -1310,42 +1551,73 @@
         
         let cleaned = TextFormatter.decodeHtmlEntities(rawText).trim();
 
-        // 1. Remove any Gospel Acclamation remnants that might have leaked into the Gospel
+        // Strip Universalis promotional / boilerplate fragments
+        cleaned = cleaned.replace(/How to listen[\s\S]*?(?=\n\n|$)/gi, '');
+        cleaned = cleaned.replace(/Get the official Universalis app[\s\S]*?(?=\n\n|$)/gi, '');
+        cleaned = cleaned.replace(/You can read the Gospels in Greek[\s\S]*?(?=\n\n|$)/gi, '');
+        cleaned = cleaned.replace(/The texts will be more readable[\s\S]*?(?=\n\n|$)/gi, '');
+        cleaned = cleaned.replace(/Optional subscription:[\s\S]*?(?=\n\n|$)/gi, '');
+        cleaned = cleaned.replace(/Christian Art[\s\S]*?(?=\n\n|$)/gi, '');
+
         cleaned = cleaned.replace(/Acclamation[\s\S]*?(?=(?:The Holy Gospel|Gospel\b(?!\s*Acclamation)|Luke|Matthew|Mark|John)\b)/i, '');
         cleaned = cleaned.replace(/^Gospel Acclamation[\s\S]*?(?=(?:A reading from|The beginning of|The Lord said|Jesus|In those days|Luke|Matthew|Mark|John|\n\n))/i, '');
-
-        // 2. Remove duplicate section title at beginning of text (e.g. "First Reading", "Gospel")
         cleaned = cleaned.replace(/^(First Reading|Second Reading|Gospel|Responsorial Psalm|The Holy Gospel)\s*/i, '').trim();
 
-        // 3. Decouple citations and words mashed directly together
-        // e.g. "Galatians 5:18-25To" -> "Galatians 5:18-25\n\nTo"
-        // e.g. "Psalm 1:1-4,6Anyone" -> "Psalm 1:1-4,6\n\nAnyone"
-        // e.g. "Luke 11:42-46You" -> "Luke 11:42-46\n\nYou"
-        cleaned = cleaned.replace(/(\b\d+(?:[:,\-–—]\d+)*)([A-Z][a-z])/g, '$1\n\n$2');
-        cleaned = cleaned.replace(/(?:Gospel|Psalm|Reading|Acclamation)([A-Z])/g, '$1\n\n$2');
+        // Separate citations with parenthetical numbering like 121(122):1-5 and quotes like 13:1-9'Leave'
+        cleaned = cleaned.replace(/(\b\d+(?:\s*\(\d+\))?(?:[:,\-–—]\d+)*)(['"“‘]?\s*[A-Za-z])/g, '$1\n\n$2');
+        cleaned = cleaned.replace(/(?:Gospel|Psalm|Reading|Acclamation)(['"“‘]?\s*[A-Za-z])/g, '$1\n\n$2');
         cleaned = cleaned.replace(/(cf\.|Or:)([A-Z])/g, '$1 $2');
 
-        const paragraphs = cleaned.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+        const rawParagraphs = cleaned.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+        const paragraphs = [];
+
+        // Pre-pass: If a citation is glued to a theme or verse, split them into distinct paragraphs
+        rawParagraphs.forEach(p => {
+          const citeMatch = p.match(/^([1-3]?\s?[A-Za-z]+|\bPsalm\b)\s+(\d+(?:\s*\(\d+\))?(?:[:,\-–—]\d+)*)(['"“‘]?\s*[\s\S]*)$/i);
+          if (citeMatch && citeMatch[3] && citeMatch[3].trim().length > 0) {
+            paragraphs.push(`${citeMatch[1]} ${citeMatch[2]}`.trim());
+            paragraphs.push(citeMatch[3].trim());
+          } else {
+            paragraphs.push(p);
+          }
+        });
+
         let citationFound = false;
+        let detectedRefrain = '';
 
         return paragraphs.map((p, idx) => {
-          // Check if first line is a Scripture citation (e.g. Galatians 5:18-25, Psalm 1:1-4,6, or Luke 11:42-46)
+          // 1. First line Scripture Citation
           if (!citationFound && idx === 0 && /^([1-3]?\s?[A-Za-z]+|\bPsalm\b)\s+\d+/i.test(p) && p.length < 80) {
             citationFound = true;
             return `<div class="reading-citation">${p}</div>`;
           }
 
-          // Psalm responsorial response
-          if (/^(Response:|R\.|Lord,|The Lord|My soul|Those who|Anyone who|Happy indeed|Blessed are)/i.test(p) && p.length < 130) {
-            return `<div class="reading-response">${p.replace(/\n/g, '<br>')}</div>`;
+          // 2. Responsorial Psalm Refrains
+          const isExplicitRefrain = /^(Response:|R\.|℟\.)/i.test(p);
+          const isRefrainCandidate = (/^(Lord,|The Lord|My soul|Those who|Anyone who|Happy indeed|Blessed are|May the Lord|In every age|I rejoiced)/i.test(p) && p.length < 130);
+          
+          if (isExplicitRefrain || (isRefrainCandidate && (idx === 1 || !detectedRefrain || p === detectedRefrain))) {
+            const cleanRefrainText = p.replace(/^(Response:|R\.|℟\.)\s*/i, '').trim();
+            if (!detectedRefrain) detectedRefrain = cleanRefrainText;
+            return `
+              <div class="psalm-refrain-box">
+                <span class="psalm-refrain-symbol">℟.</span>
+                <span class="psalm-refrain-text">${cleanRefrainText}</span>
+              </div>
+            `;
           }
 
-          // Reading liturgical theme / summary line (second line after citation)
+          // 3. Psalm stanzas
+          if (/psalm/i.test(readingTitle) && p.length > 25) {
+            return `<div class="psalm-stanza">${p.replace(/\n/g, '<br>')}</div>`;
+          }
+
+          // 4. Reading liturgical theme / summary line
           if (citationFound && idx === 1 && p.length < 110 && !/^(The Lord|In those days|Jesus|Paul|Brothers|Hear the word|A reading)/i.test(p)) {
             return `<div class="reading-theme">${p}</div>`;
           }
 
-          // Liturgical rubric line
+          // 5. Liturgical rubric line
           if (/^(A reading from|The beginning of)/i.test(p) && p.length < 90) {
             return `<div class="reading-rubric">${p}</div>`;
           }
@@ -1420,7 +1692,7 @@
     }
 
     /**
-     * API service with backend integration
+     * API Service
      */
     class ApiService {
       static async request(action, payload = {}) {
@@ -1472,7 +1744,7 @@
     }
 
     /**
-     * Finite state machine stages and practice machine
+     * State Machine & Practice Controller
      */
     const PracticeStates = {
       IDLE: 'IDLE',
@@ -1566,6 +1838,27 @@
         AppState.timer.isCountUp = false;
       }
 
+      static syncTimerDisplayFromTimestamps() {
+        if (!AppState.activeSession) return;
+        const now = Date.now();
+
+        if (AppState.timer.isCountUp && AppState.timer.startTimestamp && !AppState.timer.isPaused) {
+          AppState.timer.elapsedSeconds = Math.floor((now - AppState.timer.startTimestamp) / 1000);
+          PracticeMachine.updateStageLiveTimerDisplay(false);
+        } else if (!AppState.timer.isCountUp && AppState.timer.targetTimestamp && !AppState.timer.isPaused) {
+          const diff = Math.max(0, Math.round((AppState.timer.targetTimestamp - now) / 1000));
+          AppState.timer.remainingSeconds = diff;
+          PracticeMachine.updateStageLiveTimerDisplay(true);
+
+          const displayEl = document.getElementById('timer-display');
+          if (displayEl) {
+            const mins = Math.floor(diff / 60);
+            const secs = diff % 60;
+            displayEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+          }
+        }
+      }
+
       static startActiveStageTimer() {
         PracticeMachine.stopTimer();
         if (!AppState.activeSession) return;
@@ -1601,7 +1894,7 @@
           return;
         }
 
-        // Scripture, Reflection, Serenity & Personal Prayers: Count up calmly
+        // Scripture, Reflection, Serenity & Personal Prayers: Count up calmly with dual stage and cumulative clocks
         if (current === PracticeStates.SCRIPTURE || 
             current === PracticeStates.REFLECTION || 
             current === PracticeStates.PRAYER_SERENITY || 
@@ -1635,12 +1928,21 @@
       }
 
       static updateStageLiveTimerDisplay(isCountdown = false) {
-        const el = document.getElementById('stage-timer-clock');
-        if (el) {
+        const stageEl = document.getElementById('stage-timer-clock');
+        if (stageEl) {
           const totalSecs = isCountdown ? (AppState.timer.remainingSeconds || 0) : (AppState.timer.elapsedSeconds || 0);
           const mins = Math.floor(totalSecs / 60);
           const secs = totalSecs % 60;
-          el.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+          stageEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // Update Total Cumulative Session Elapsed Time
+        const totalEl = document.getElementById('session-total-clock');
+        if (totalEl && AppState.activeSession && AppState.activeSession.startTimestamp) {
+          const totalElapsed = Math.max(0, Math.floor((Date.now() - AppState.activeSession.startTimestamp) / 1000));
+          const tMins = Math.floor(totalElapsed / 60);
+          const tSecs = totalElapsed % 60;
+          totalEl.textContent = `${String(tMins).padStart(2, '0')}:${String(tSecs).padStart(2, '0')}`;
         }
       }
 
@@ -1867,7 +2169,7 @@
     }
 
     /**
-     * Application Router and View Rendering
+     * Application Router & Views
      */
     class Router {
       static init() {
@@ -1883,14 +2185,12 @@
           brandLink.addEventListener('click', () => Router.navigate('today'));
         }
 
-        // Fullscreen Timer Controls
         document.getElementById('timer-pause-btn').addEventListener('click', () => PracticeMachine.togglePause());
         document.getElementById('timer-extend-btn').addEventListener('click', () => PracticeMachine.extendTimer(120));
         document.getElementById('timer-reduce-btn').addEventListener('click', () => PracticeMachine.reduceTimer(120));
         document.getElementById('timer-skip-btn').addEventListener('click', () => PracticeMachine.skipStage());
         document.getElementById('timer-end-btn').addEventListener('click', () => PracticeMachine.endPracticeEarly());
 
-        // Theme Toggle
         document.getElementById('theme-toggle').addEventListener('click', () => {
           const current = document.documentElement.getAttribute('data-theme');
           const next = current === 'dark' ? 'light' : 'dark';
@@ -1903,14 +2203,12 @@
           document.documentElement.setAttribute('data-theme', savedTheme);
         }
 
-        // Account Trigger
         document.getElementById('auth-btn').addEventListener('click', () => {
           Router.navigate('auth');
         });
 
         Router.updateHeaderProfileBadge();
 
-        // Check for session recovery
         if (PracticeMachine.restoreSession()) {
           Router.navigate('practice');
           PracticeMachine.startActiveStageTimer();
@@ -1920,25 +2218,31 @@
 
         Router.fetchDailyReadingsInBackground();
         Router.syncTodayReflectionFromBackend();
+        Router.checkSundayHomily();
       }
 
       static async fetchDailyReadingsInBackground() {
         const todayStr = new Date().toISOString().split('T')[0];
+        const isSaturday = (new Date().getDay() === 6);
         const cached = localStorage.getItem(STORAGE_KEY_READINGS_CACHE);
+        
         if (cached) {
           try {
             const parsed = JSON.parse(cached);
             if (parsed.date === todayStr && Array.isArray(parsed.readings) && parsed.readings.length > 0) {
               AppState.readings = parsed.readings;
+              Router.ensureSaturdayPatristicPresence(isSaturday);
               return;
             }
           } catch (e) {}
         }
 
         try {
-          const res = await ApiService.request('getReadings');
+          const res = await ApiService.request('getReadings', { forcePatristic: isSaturday });
           if (res && res.success && Array.isArray(res.readings) && res.readings.length > 0) {
             AppState.readings = res.readings.filter(r => !/acclamation/i.test(r.title));
+            Router.ensureSaturdayPatristicPresence(isSaturday);
+            
             localStorage.setItem(STORAGE_KEY_READINGS_CACHE, JSON.stringify({
               date: todayStr,
               readings: AppState.readings
@@ -1948,9 +2252,37 @@
                (AppState.activeSession && AppState.activeSession.state === PracticeStates.SCRIPTURE)) {
               Router.render();
             }
+          } else {
+            Router.ensureSaturdayPatristicPresence(isSaturday);
           }
         } catch (e) {
           console.warn("Could not pre-fetch daily readings:", e);
+          Router.ensureSaturdayPatristicPresence(isSaturday);
+        }
+      }
+
+      static ensureSaturdayPatristicPresence(isSaturday) {
+        if (!isSaturday) return;
+        const exists = AppState.readings.some(r => r.id === 'patristic' || /patristic/i.test(r.title));
+        if (!exists) {
+          AppState.readings.push({
+            id: 'patristic',
+            title: "Patristic Reading",
+            content: "From the Confessions of Saint Augustine, bishop\n\nLate have I loved you, O Beauty ever ancient, ever new!\n\nLate have I loved you, O Beauty ever ancient, ever new, late have I loved you! You were within me, but I was in the world outside myself. I made love to the beautiful things you made, nor did I see that they were only reflections of your splendour.\n\nYou were with me, but I was not with you. The lovely things of this world kept me far from you, though they would not have existed at all had they not been in you.\n\nYou called, you shouted, you broke through my deafness. You flashed, you shone, you dispelled my darkness. You breathed your fragrance upon me; I drew in my breath and now I pant for you. I have tasted you, now I hunger and thirst for more. You touched me, and I burned for your peace."
+          });
+        }
+      }
+
+      static async checkSundayHomily() {
+        const today = new Date();
+        if (today.getDay() === 0 || today.getDay() === 6) {
+          const res = await ApiService.request('getSundayHomily');
+          if (res && res.success && res.homily) {
+            AppState.sundayHomily = res.homily;
+            if (AppState.currentRoute === 'today' || AppState.currentRoute === 'scripture_standalone') {
+              Router.render();
+            }
+          }
         }
       }
 
@@ -2065,12 +2397,35 @@
 
         const hasReflection = Boolean(AppState.todayReflection.q1 || AppState.todayReflection.q2 || AppState.todayReflection.q3);
         const persistentIntention = AppState.lastChosenIntention || "When I notice myself becoming impatient, I will pause, exhale, and soften my shoulders.";
+        const isSunday = new Date().getDay() === 0;
+        const isSaturday = new Date().getDay() === 6;
 
         return `
           <div class="card">
             <span class="status-banner">Africa/Johannesburg</span>
             <h2>Today</h2>
             <p>${todayDate}</p>
+
+            ${AppState.pocketAnchor && AppState.pocketAnchor.text ? `
+              <div class="pocket-anchor-card" id="today-anchor-card" title="Your morning scripture anchor (Ruminatio)">
+                <div class="pocket-anchor-badge">
+                  <span class="pocket-anchor-label">Pocket Anchor • Ruminatio</span>
+                  <button class="btn-quiet" id="btn-edit-anchor-inline" style="padding: 2px 6px; font-size: 0.76rem; color: var(--accent);">Edit</button>
+                </div>
+                <div class="pocket-anchor-verse">"${AppState.pocketAnchor.text}"</div>
+                ${AppState.pocketAnchor.source ? `<div class="pocket-anchor-source">— ${AppState.pocketAnchor.source}</div>` : ''}
+              </div>
+            ` : `
+              <div class="pocket-anchor-card" style="border-left-style: dashed; padding: 14px 16px; opacity: 0.85;">
+                <div class="pocket-anchor-badge">
+                  <span class="pocket-anchor-label">Pocket Anchor • Ruminatio</span>
+                  <button class="btn-quiet" id="btn-set-anchor-now" style="padding: 2px 6px; font-size: 0.76rem; color: var(--accent);">+ Set Verse</button>
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-muted); font-style: italic;">
+                  No verse selected yet. Tap to set a phrase to chew on throughout your day.
+                </div>
+              </div>
+            `}
 
             ${hasUnfinished ? `
               <div style="background: var(--accent-soft); padding: 16px; border-radius: var(--radius); margin-bottom: 20px;">
@@ -2083,8 +2438,12 @@
             ` : ''}
 
             <ul class="flow-list">
-              <li class="flow-item clickable-flow" id="flow-open-scripture" title="Touch to open Scripture & Exegesis anytime">
-                <span><strong>1 Scripture & Reflection</strong> <span style="font-size:0.8rem; color:var(--accent);">↗ open</span></span>
+              <li class="flow-item clickable-flow" id="flow-open-scripture" title="Touch to open Scripture, Patristic Wisdom & Exegesis">
+                <span>
+                  <strong>1 Scripture & Reflection</strong>
+                  ${isSaturday ? '<span style="font-size:0.75rem; color:var(--accent); font-weight:600;"> • Patristic Wisdom</span>' : ''}
+                  <span style="font-size:0.8rem; color:var(--accent);">↗ open</span>
+                </span>
                 <span class="flow-indicator ${hasUnfinished ? 'done' : ''}">○</span>
               </li>
               <li class="flow-item">
@@ -2100,7 +2459,7 @@
                 <span class="flow-indicator">○</span>
               </li>
               <li class="flow-item clickable-flow" id="flow-open-intention" title="Touch to manage Daily Intentions">
-                <span><strong>Daily Intention:</strong> <span style="color:var(--text-muted); font-size:0.88rem;">${persistentIntention.slice(0, 36)}...</span> <span style="font-size:0.78rem; color:var(--accent);">↗ edit</span></span>
+                <span><strong>Daily Intention:</strong> <span style="color:var(--text-muted); font-size:0.88rem;">${persistentIntention.slice(0, 34)}...</span> <span style="font-size:0.78rem; color:var(--accent);">↗ edit</span></span>
                 <span class="flow-indicator">—</span>
               </li>
             </ul>
@@ -2109,6 +2468,20 @@
               ${hasUnfinished ? 'Continue Practice' : 'Begin Today\'s Practice'}
             </button>
           </div>
+
+          ${(isSunday && AppState.sundayHomily) ? `
+            <div class="card" style="border-left: 3px solid var(--accent);">
+              <span class="status-banner">Sunday Homily • Bishop Barron</span>
+              <h3>${AppState.sundayHomily.title}</h3>
+              <p style="font-size:0.9rem; line-height:1.55; margin-bottom:14px;">${AppState.sundayHomily.summary}</p>
+              ${AppState.sundayHomily.audioUrl ? `
+                <audio controls style="width:100%; height:40px; margin-bottom:8px;">
+                  <source src="${AppState.sundayHomily.audioUrl}" type="audio/mpeg">
+                  Your device does not support inline audio.
+                </audio>
+              ` : ''}
+            </div>
+          ` : ''}
 
           <div class="card">
             <h3>Today's Reflection Journal</h3>
@@ -2173,6 +2546,25 @@
         if (reviewBtn) {
           reviewBtn.addEventListener('click', () => Router.navigate('end_of_day'));
         }
+
+        const setAnchorBtn = document.getElementById('btn-set-anchor-now');
+        const editAnchorBtn = document.getElementById('btn-edit-anchor-inline');
+        const handleAnchorPrompt = () => {
+          const currentText = (AppState.pocketAnchor && AppState.pocketAnchor.text) || '';
+          const newText = prompt("Enter a single Scripture phrase to hold in mind today (Ruminatio):", currentText);
+          if (newText && newText.trim()) {
+            AppState.pocketAnchor = {
+              text: newText.trim(),
+              source: (AppState.readings[AppState.currentReadingIndex] ? AppState.readings[AppState.currentReadingIndex].title : "Today's Word"),
+              date: new Date().toISOString().split('T')[0]
+            };
+            localStorage.setItem(STORAGE_KEY_POCKET_ANCHOR, JSON.stringify(AppState.pocketAnchor));
+            Router.render();
+          }
+        };
+
+        if (setAnchorBtn) setAnchorBtn.addEventListener('click', handleAnchorPrompt);
+        if (editAnchorBtn) editAnchorBtn.addEventListener('click', handleAnchorPrompt);
       }
 
       static renderStandaloneIntentionScreen() {
@@ -2210,9 +2602,9 @@
 
             <div class="input-group" style="margin-top: 18px;">
               <label>Add new intention</label>
-              <div style="display: flex; gap: 8px;">
+              <div class="intention-creator-row">
                 <input type="text" id="standalone-new-intention-input" placeholder="When I notice myself..., I will...">
-                <button class="btn btn-secondary" id="btn-standalone-add-intention" style="width: auto; padding: 12px 18px;">Add</button>
+                <button class="btn btn-secondary btn-add" id="btn-standalone-add-intention">Add</button>
               </div>
             </div>
 
@@ -2303,33 +2695,46 @@
         const dateKey = `${todayStr}_${current.id}`;
         const cachedExegesis = AppState.exegesisCache[dateKey] || null;
         const isGenerating = ExegesisManager.isPending(dateKey);
+        const currentAnchorText = (AppState.pocketAnchor && AppState.pocketAnchor.text) || '';
 
         return `
           <div class="card">
             <div class="stage-header-bar">
-              <span class="stage-chip">Scripture & Exegesis</span>
+              <span class="stage-chip">Scripture & Contemplation</span>
               <div></div>
               <button class="stage-exit-btn" id="btn-scrip-back">← Back to Today</button>
             </div>
 
             <div class="reading-tabs">
               ${readings.map((r, i) => `
-                <button class="reading-tab-btn standalone-tab ${i === AppState.currentReadingIndex ? 'active' : ''}" data-idx="${i}">
+                <button class="reading-tab-btn standalone-tab ${r.id === 'patristic' ? 'patristic-tab' : ''} ${i === AppState.currentReadingIndex ? 'active' : ''}" data-idx="${i}">
                   ${r.title}
                 </button>
               `).join('')}
             </div>
 
-            <h3>${current.title}</h3>
-            <div class="reading-content-container">${formattedHtml}</div>
-
-            <div class="btn-group" style="margin-bottom: 14px;">
+            <div class="reading-top-toolbar">
               <button class="btn btn-secondary" id="btn-standalone-read-aloud">
                 ${sound.isSpeaking ? '⏹ Stop Read Back' : '🔊 Read Aloud'}
               </button>
               <button class="btn btn-secondary" id="btn-standalone-open-universalis" title="Open official liturgical source">
-                Universalis ↗
+                ${current.id === 'patristic' ? 'Office of Readings ↗' : 'Universalis ↗'}
               </button>
+            </div>
+
+            <h3>${current.title}</h3>
+            <div class="reading-content-container">${formattedHtml}</div>
+
+            <!-- Pocket Anchor Capture Module -->
+            <div class="pocket-anchor-capture-box">
+              <div class="pocket-anchor-capture-title">
+                <span>📌</span> Pocket Anchor (Ruminatio)
+              </div>
+              <p style="font-size: 0.85rem; margin-bottom: 8px;">Highlight any phrase above or type a line to hold in mind today:</p>
+              <div class="pocket-anchor-capture-row">
+                <input type="text" id="standalone-anchor-input" placeholder="e.g. The Lord is my shepherd..." value="${currentAnchorText}">
+                <button class="btn btn-primary" id="btn-save-standalone-anchor">Set Anchor</button>
+              </div>
             </div>
 
             <div id="standalone-exegesis-box">
@@ -2369,6 +2774,34 @@
             Router.render();
           });
         });
+
+        // Auto-fill anchor input when user highlights text on screen
+        document.addEventListener('selectionchange', () => {
+          const selection = window.getSelection().toString().trim();
+          const anchorInput = document.getElementById('standalone-anchor-input') || document.getElementById('practice-anchor-input');
+          if (selection && selection.length > 5 && selection.length < 180 && anchorInput) {
+            anchorInput.value = selection;
+          }
+        });
+
+        const saveAnchorBtn = document.getElementById('btn-save-standalone-anchor');
+        if (saveAnchorBtn) {
+          saveAnchorBtn.addEventListener('click', () => {
+            const input = document.getElementById('standalone-anchor-input');
+            const val = input ? input.value.trim() : '';
+            if (!val) return;
+
+            const current = AppState.readings[AppState.currentReadingIndex] || AppState.readings[0];
+            AppState.pocketAnchor = {
+              text: val,
+              source: current ? current.title : "Scripture",
+              date: new Date().toISOString().split('T')[0]
+            };
+            localStorage.setItem(STORAGE_KEY_POCKET_ANCHOR, JSON.stringify(AppState.pocketAnchor));
+            saveAnchorBtn.textContent = "Saved ✓";
+            setTimeout(() => { if (saveAnchorBtn) saveAnchorBtn.textContent = "Set Anchor"; }, 2000);
+          });
+        }
 
         const speakBtn = document.getElementById('btn-standalone-read-aloud');
         if (speakBtn) {
@@ -2413,7 +2846,11 @@
         const uniBtn = document.getElementById('btn-standalone-open-universalis');
         if (uniBtn) {
           uniBtn.addEventListener('click', () => {
-            window.open(AppState.settings.universalisUrl || "https://universalis.com/africa.safrica/mass.htm", "_blank");
+            const current = AppState.readings[AppState.currentReadingIndex];
+            const target = (current && current.id === 'patristic')
+              ? (AppState.settings.universalisOfficeUrl || "https://universalis.com/africa.safrica/readings.htm")
+              : (AppState.settings.universalisUrl || "https://universalis.com/africa.safrica/mass.htm");
+            window.open(target, "_blank");
           });
         }
 
@@ -2598,35 +3035,67 @@
         const dateKey = `${todayStr}_${current.id}`;
         const cached = AppState.exegesisCache[dateKey];
         const isGenerating = ExegesisManager.isPending(dateKey);
+        const isSunday = new Date().getDay() === 0;
+        const currentAnchorText = (AppState.pocketAnchor && AppState.pocketAnchor.text) || '';
 
         return `
           <div class="card">
             <div class="stage-header-bar">
               <span class="stage-chip">Stage 1 — Scripture</span>
-              <div class="stage-live-timer" title="Elapsed Time">
-                <span>⏱</span><span id="stage-timer-clock">00:00</span>
+              <div class="stage-live-timer" title="Stage and Total Session Elapsed Time">
+                <span class="timer-stage-badge">⏱ <span id="stage-timer-clock">00:00</span></span>
+                <span class="timer-divider">•</span>
+                <span class="timer-total-badge" title="Total time since practice began">Total <span id="session-total-clock">00:00</span></span>
               </div>
               <button class="stage-exit-btn" id="btn-stage-exit">End Practice</button>
             </div>
 
             <div class="reading-tabs">
               ${readings.map((r, i) => `
-                <button class="reading-tab-btn ${i === AppState.currentReadingIndex ? 'active' : ''}" data-idx="${i}">
+                <button class="reading-tab-btn ${r.id === 'patristic' ? 'patristic-tab' : ''} ${i === AppState.currentReadingIndex ? 'active' : ''}" data-idx="${i}">
                   ${r.title}
                 </button>
               `).join('')}
             </div>
 
-            <h3>${current.title}</h3>
-            <div class="reading-content-container">${formattedHtml}</div>
-
-            <div class="btn-group" style="margin-bottom: 14px;">
+            <div class="reading-top-toolbar">
               <button class="btn btn-secondary" id="btn-read-aloud">
                 ${sound.isSpeaking ? '⏹ Stop Read Back' : '🔊 Read Aloud'}
               </button>
               <button class="btn btn-secondary" id="btn-open-universalis" title="Open official liturgical source">
-                Universalis ↗
+                ${current.id === 'patristic' ? 'Office of Readings ↗' : 'Universalis ↗'}
               </button>
+            </div>
+
+            ${(isSunday && AppState.sundayHomily) ? `
+              <div style="background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 12px 14px; border-radius: 0 var(--radius) var(--radius) 0; margin-bottom: 18px;">
+                <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; margin-bottom: 4px;">
+                  Sunday Homily • Bishop Barron
+                </div>
+                <div style="font-family: var(--font-serif); font-size: 0.95rem; font-weight: 600; margin-bottom: 8px;">
+                  ${AppState.sundayHomily.title}
+                </div>
+                ${AppState.sundayHomily.audioUrl ? `
+                  <audio controls style="width: 100%; height: 38px;">
+                    <source src="${AppState.sundayHomily.audioUrl}" type="audio/mpeg">
+                  </audio>
+                ` : ''}
+              </div>
+            ` : ''}
+
+            <h3>${current.title}</h3>
+            <div class="reading-content-container">${formattedHtml}</div>
+
+            <!-- Pocket Anchor Capture Module during Stage 1 -->
+            <div class="pocket-anchor-capture-box">
+              <div class="pocket-anchor-capture-title">
+                <span>📌</span> Pocket Anchor (Ruminatio)
+              </div>
+              <p style="font-size: 0.85rem; margin-bottom: 8px;">Highlight any phrase above or type a line to hold in mind today:</p>
+              <div class="pocket-anchor-capture-row">
+                <input type="text" id="practice-anchor-input" placeholder="e.g. The Lord is my shepherd..." value="${currentAnchorText}">
+                <button class="btn btn-primary" id="btn-save-practice-anchor">Set Anchor</button>
+              </div>
             </div>
 
             <div id="exegesis-container">
@@ -2665,8 +3134,10 @@
           <div class="card">
             <div class="stage-header-bar">
               <button class="stage-back-btn" id="btn-refl-to-scrip" title="Check Scripture readings again">← Scripture</button>
-              <div class="stage-live-timer" title="Elapsed Time">
-                <span>⏱</span><span id="stage-timer-clock">00:00</span>
+              <div class="stage-live-timer" title="Stage and Total Session Elapsed Time">
+                <span class="timer-stage-badge">⏱ <span id="stage-timer-clock">00:00</span></span>
+                <span class="timer-divider">•</span>
+                <span class="timer-total-badge" title="Total time since practice began">Total <span id="session-total-clock">00:00</span></span>
               </div>
               <button class="stage-exit-btn" id="btn-stage-exit">End Practice</button>
             </div>
@@ -2699,8 +3170,10 @@
           <div class="card" style="text-align: center; padding: 28px 20px;">
             <div class="stage-header-bar">
               <span class="stage-chip">Stage 2 — Prayer</span>
-              <div class="stage-live-timer" title="${isJesusPrayer ? 'Countdown to Meditation' : 'Elapsed Time'}">
-                <span>⏱</span><span id="stage-timer-clock">${isJesusPrayer ? '01:00' : '00:00'}</span>
+              <div class="stage-live-timer" title="Stage and Total Session Elapsed Time">
+                <span class="timer-stage-badge">⏱ <span id="stage-timer-clock">${isJesusPrayer ? '01:00' : '00:00'}</span></span>
+                <span class="timer-divider">•</span>
+                <span class="timer-total-badge" title="Total time since practice began">Total <span id="session-total-clock">00:00</span></span>
               </div>
               <button class="stage-exit-btn" id="btn-stage-exit">End Practice</button>
             </div>
@@ -2788,9 +3261,9 @@ ${content}
 
             <div class="input-group" style="margin-top: 18px;">
               <label>Add new intention</label>
-              <div style="display: flex; gap: 8px;">
+              <div class="intention-creator-row">
                 <input type="text" id="new-intention-input" placeholder="When I notice myself..., I will...">
-                <button class="btn btn-secondary" id="btn-add-intention" style="width: auto; padding: 12px 18px;">Add</button>
+                <button class="btn btn-secondary btn-add" id="btn-add-intention">Add</button>
               </div>
             </div>
 
@@ -2803,6 +3276,7 @@ ${content}
         const session = AppState.activeSession || {};
         const duration = session.durationMinutes || 36;
         const intention = session.selectedIntention || AppState.lastChosenIntention || "When I notice myself becoming impatient, I will pause, exhale, and soften my shoulders.";
+        const anchor = AppState.pocketAnchor && AppState.pocketAnchor.text;
 
         return `
           <div class="card" style="text-align: center; padding: 40px 22px;">
@@ -2811,6 +3285,15 @@ ${content}
             <p style="font-size: 1.05rem; margin-bottom: 22px;">
               Total Practice Time: <strong>${duration} minutes</strong>
             </p>
+
+            ${anchor ? `
+              <div style="background: var(--card-bg); border: 1px solid var(--accent); border-radius: var(--radius); padding: 16px; text-align: left; margin-bottom: 18px;">
+                <small style="text-transform: uppercase; color: var(--accent); font-weight: 700; letter-spacing: 0.06em;">Today's Pocket Anchor (Ruminatio)</small>
+                <div style="font-family: var(--font-serif); font-size: 1.08rem; font-style: italic; margin-top: 6px; line-height: 1.5; color: var(--text-main);">
+                  "${anchor}"
+                </div>
+              </div>
+            ` : ''}
 
             <div style="background: var(--accent-soft); padding: 18px; border-radius: var(--radius); text-align: left; margin-bottom: 26px;">
               <small style="text-transform: uppercase; color: var(--accent); font-weight: 600; letter-spacing: 0.05em;">Today's Sealed Intention</small>
@@ -2880,6 +3363,25 @@ ${content}
           });
         });
 
+        const savePracticeAnchorBtn = document.getElementById('btn-save-practice-anchor');
+        if (savePracticeAnchorBtn) {
+          savePracticeAnchorBtn.addEventListener('click', () => {
+            const input = document.getElementById('practice-anchor-input');
+            const val = input ? input.value.trim() : '';
+            if (!val) return;
+
+            const current = AppState.readings[AppState.currentReadingIndex] || AppState.readings[0];
+            AppState.pocketAnchor = {
+              text: val,
+              source: current ? current.title : "Scripture",
+              date: new Date().toISOString().split('T')[0]
+            };
+            localStorage.setItem(STORAGE_KEY_POCKET_ANCHOR, JSON.stringify(AppState.pocketAnchor));
+            savePracticeAnchorBtn.textContent = "Saved ✓";
+            setTimeout(() => { if (savePracticeAnchorBtn) savePracticeAnchorBtn.textContent = "Set Anchor"; }, 2000);
+          });
+        }
+
         const speakBtn = document.getElementById('btn-read-aloud');
         if (speakBtn) {
           speakBtn.addEventListener('click', () => {
@@ -2923,7 +3425,11 @@ ${content}
         const uniBtn = document.getElementById('btn-open-universalis');
         if (uniBtn) {
           uniBtn.addEventListener('click', () => {
-            window.open(AppState.settings.universalisUrl || "https://universalis.com/africa.safrica/mass.htm", "_blank");
+            const current = AppState.readings[AppState.currentReadingIndex];
+            const target = (current && current.id === 'patristic')
+              ? (AppState.settings.universalisOfficeUrl || "https://universalis.com/africa.safrica/readings.htm")
+              : (AppState.settings.universalisUrl || "https://universalis.com/africa.safrica/mass.htm");
+            window.open(target, "_blank");
           });
         }
 
@@ -3213,7 +3719,7 @@ ${content}
         return `
           <div class="card">
             <h2>Practice Journey</h2>
-            <p>A quiet observation of stillness and faithfulness over time.</p>
+            <p>A quiet observation of stillness, faithfulness, and consistency over time.</p>
             <div id="history-content">
               <p style="color: var(--text-muted);">Retrieving practice stats...</p>
             </div>
@@ -3233,6 +3739,10 @@ ${content}
 
         if (res.success && res.history) {
           const h = res.history;
+          const weekChange = (h.thisWeek && h.thisWeek.practices !== undefined)
+            ? (h.thisWeek.practices - (h.thisWeek.previous || 0)) : 0;
+          const weekSign = weekChange > 0 ? `+${weekChange}` : `${weekChange}`;
+
           container.innerHTML = `
             <div class="stats-trio">
               <div class="stat-card">
@@ -3240,12 +3750,36 @@ ${content}
                 <div class="stat-title">Daily Streak</div>
               </div>
               <div class="stat-card">
+                <div class="stat-number">${h.longestStreak || 0}</div>
+                <div class="stat-title">Longest Streak</div>
+              </div>
+              <div class="stat-card">
                 <div class="stat-number">${h.totalPractices || 0}</div>
                 <div class="stat-title">Days of Stillness</div>
               </div>
-              <div class="stat-card">
-                <div class="stat-number">${h.totalMinutes || 0}</div>
-                <div class="stat-title">Minutes Silent</div>
+            </div>
+
+            <div class="stats-comparison-row">
+              <div class="comparison-card">
+                <div class="comparison-title">This Week</div>
+                <div class="comparison-val">
+                  ${h.thisWeek ? h.thisWeek.practices : 0}
+                  <span class="comparison-sub">vs ${h.thisWeek ? h.thisWeek.previous : 0} last week (${weekSign})</span>
+                </div>
+              </div>
+              <div class="comparison-card">
+                <div class="comparison-title">This Month</div>
+                <div class="comparison-val">
+                  ${h.thisMonth ? h.thisMonth.practices : 0}
+                  <span class="comparison-sub">vs ${h.thisMonth ? h.thisMonth.previous : 0} last month</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="comparison-card" style="margin-bottom: 18px;">
+              <div class="comparison-title">Average Session Duration</div>
+              <div class="comparison-val">
+                ${h.avgSessionMinutes || 0} <span class="comparison-sub">minutes in quiet meditation</span>
               </div>
             </div>
 
@@ -3517,7 +4051,7 @@ ${content}
     }
 
     /**
-     * Application bootstrapping
+     * Bootstrapping
      */
     window.addEventListener('DOMContentLoaded', async () => {
       const savedSettings = localStorage.getItem(STORAGE_KEY_SETTINGS);
@@ -3528,6 +4062,17 @@ ${content}
       const savedIntention = localStorage.getItem(STORAGE_KEY_LAST_INTENTION);
       if (savedIntention) {
         AppState.lastChosenIntention = savedIntention;
+      }
+
+      const savedAnchor = localStorage.getItem(STORAGE_KEY_POCKET_ANCHOR);
+      if (savedAnchor) {
+        try {
+          const parsedAnchor = JSON.parse(savedAnchor);
+          const todayStr = new Date().toISOString().split('T')[0];
+          if (parsedAnchor.date === todayStr) {
+            AppState.pocketAnchor = parsedAnchor;
+          }
+        } catch (e) {}
       }
 
       const savedCache = localStorage.getItem(STORAGE_KEY_EXEGESIS_CACHE);
