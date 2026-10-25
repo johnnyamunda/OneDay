@@ -512,6 +512,27 @@
       margin-bottom: 1.4rem;
     }
 
+    /* Catholic Liturgical Acclamation at end of reading */
+    .reading-liturgical-conclusion {
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-serif);
+    }
+
+    .versicle-call {
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .versicle-response {
+      font-size: 1.02rem;
+      font-style: italic;
+      color: var(--accent);
+    }
+
     /* Pocket Anchor Card & Selector */
     .pocket-anchor-card {
       background: var(--card-bg);
@@ -666,7 +687,6 @@
       50% { opacity: 1; transform: scale(1.15); }
     }
 
-    /* Fixed Intention Creator Flex Shape */
     .intention-creator-row {
       display: flex;
       gap: 8px;
@@ -1153,9 +1173,10 @@
     const STORAGE_KEY_SETTINGS = "oneday_cached_settings";
     const STORAGE_KEY_LAST_INTENTION = "oneday_last_chosen_intention";
     const STORAGE_KEY_TODAY_REFLECTION = "oneday_today_reflection";
-    const STORAGE_KEY_POCKET_ANCHOR = "oneday_pocket_anchor_v1";
+    const STORAGE_KEY_POCKET_ANCHOR = "oneday_pocket_anchor_v2";
     const STORAGE_KEY_EXEGESIS_CACHE = "oneday_exegesis_cache_v5";
-    const STORAGE_KEY_READINGS_CACHE = "oneday_readings_cache_v5";
+    const STORAGE_KEY_READINGS_CACHE = "oneday_readings_cache_v6";
+    const STORAGE_KEY_HOMILY_CACHE = "oneday_homily_cache_v1";
 
     // Application Master State
     const AppState = {
@@ -1164,7 +1185,7 @@
       currentRoute: 'today',
       isOnline: navigator.onLine,
       lastChosenIntention: localStorage.getItem(STORAGE_KEY_LAST_INTENTION) || "When I notice myself becoming impatient, I will pause, exhale, and soften my shoulders.",
-      pocketAnchor: null, // { text: '', source: '', date: '' }
+      pocketAnchor: null,
       todayReflection: {
         date: new Date().toISOString().split('T')[0],
         readingRef: '',
@@ -1497,34 +1518,17 @@
     const wakeLock = new WakeLockService();
 
     /**
-     * Text formatting, entity eradication, and clean liturgy parser
+     * Liturgical & Typography Text Formatter
      */
     class TextFormatter {
-      static decodeHtmlEntities(raw) {
-        if (!raw) return '';
-        let s = raw;
-
-        s = s.replace(/&#?(8016|8216|8217|8220|8221|8211|8212);?/gi, (m, code) => {
-          if (code === '8216' || code === '8016') return "'";
-          if (code === '8217') return "'";
-          if (code === '8220' || code === '8221') return '"';
-          if (code === '8211' || code === '8212') return '—';
-          return ' ';
-        });
-
-        const doc = new DOMParser().parseFromString(s, 'text/html');
-        let decoded = doc.body.textContent || '';
-
-        decoded = decoded
-          .replace(/[\u2018\u2019]/g, "'")
-          .replace(/[\u201C\u201D]/g, '"')
-          .replace(/[\u2013\u2014]/g, "—")
-          .replace(/&#160;|&nbsp;|#160/gi, ' ');
-
-        return decoded;
+      static decodeHtmlEntities(str) {
+        if (!str) return '';
+        const txt = document.createElement('textarea');
+        txt.innerHTML = str;
+        return txt.value;
       }
 
-      static sanitizeForSpeech(raw) {
+      static sanitizeForSpeech(raw, readingTitle = '') {
         if (!raw) return '';
         let s = TextFormatter.decodeHtmlEntities(raw);
 
@@ -1533,7 +1537,6 @@
         s = s.replace(/Alleluia[^\n.]*[\n.]/gi, ' ');
         s = s.replace(/How to listen[\s\S]*$/gi, ' ');
 
-        // Universal pronunciation for chapters and verses with parentheses
         s = s.replace(/(\b[1-3]?\s?[A-Za-z]+)\s+(\d+)(?:\s*\(\d+\))?[:,\-–—](\d+)/g, '$1 chapter $2, verse $3. ');
         s = s.replace(/\bPsalm\s+(\d+)(?:\s*\(\d+\))?[:,\-–—](\d+)/gi, 'Psalm $1, verse $2. ');
 
@@ -1543,7 +1546,15 @@
         s = s.replace(/\[\d+\]/g, ' ');
         s = s.replace(/<[^>]+>/g, ' ');
 
-        return s.replace(/\s+/g, ' ').trim();
+        let cleanSpoken = s.replace(/\s+/g, ' ').trim();
+
+        if (/gospel/i.test(readingTitle)) {
+          cleanSpoken += ". The Gospel of the Lord. Praise to you, Lord Jesus Christ.";
+        } else if (/reading|patristic/i.test(readingTitle)) {
+          cleanSpoken += ". The word of the Lord. Thanks be to God.";
+        }
+
+        return cleanSpoken;
       }
 
       static formatReadingHtml(rawText, readingTitle = '') {
@@ -1551,7 +1562,6 @@
         
         let cleaned = TextFormatter.decodeHtmlEntities(rawText).trim();
 
-        // Strip Universalis promotional / boilerplate fragments
         cleaned = cleaned.replace(/How to listen[\s\S]*?(?=\n\n|$)/gi, '');
         cleaned = cleaned.replace(/Get the official Universalis app[\s\S]*?(?=\n\n|$)/gi, '');
         cleaned = cleaned.replace(/You can read the Gospels in Greek[\s\S]*?(?=\n\n|$)/gi, '');
@@ -1563,7 +1573,6 @@
         cleaned = cleaned.replace(/^Gospel Acclamation[\s\S]*?(?=(?:A reading from|The beginning of|The Lord said|Jesus|In those days|Luke|Matthew|Mark|John|\n\n))/i, '');
         cleaned = cleaned.replace(/^(First Reading|Second Reading|Gospel|Responsorial Psalm|The Holy Gospel)\s*/i, '').trim();
 
-        // Separate citations with parenthetical numbering like 121(122):1-5 and quotes like 13:1-9'Leave'
         cleaned = cleaned.replace(/(\b\d+(?:\s*\(\d+\))?(?:[:,\-–—]\d+)*)(['"“‘]?\s*[A-Za-z])/g, '$1\n\n$2');
         cleaned = cleaned.replace(/(?:Gospel|Psalm|Reading|Acclamation)(['"“‘]?\s*[A-Za-z])/g, '$1\n\n$2');
         cleaned = cleaned.replace(/(cf\.|Or:)([A-Z])/g, '$1 $2');
@@ -1571,7 +1580,6 @@
         const rawParagraphs = cleaned.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
         const paragraphs = [];
 
-        // Pre-pass: If a citation is glued to a theme or verse, split them into distinct paragraphs
         rawParagraphs.forEach(p => {
           const citeMatch = p.match(/^([1-3]?\s?[A-Za-z]+|\bPsalm\b)\s+(\d+(?:\s*\(\d+\))?(?:[:,\-–—]\d+)*)(['"“‘]?\s*[\s\S]*)$/i);
           if (citeMatch && citeMatch[3] && citeMatch[3].trim().length > 0) {
@@ -1585,14 +1593,12 @@
         let citationFound = false;
         let detectedRefrain = '';
 
-        return paragraphs.map((p, idx) => {
-          // 1. First line Scripture Citation
+        let bodyHtml = paragraphs.map((p, idx) => {
           if (!citationFound && idx === 0 && /^([1-3]?\s?[A-Za-z]+|\bPsalm\b)\s+\d+/i.test(p) && p.length < 80) {
             citationFound = true;
             return `<div class="reading-citation">${p}</div>`;
           }
 
-          // 2. Responsorial Psalm Refrains
           const isExplicitRefrain = /^(Response:|R\.|℟\.)/i.test(p);
           const isRefrainCandidate = (/^(Lord,|The Lord|My soul|Those who|Anyone who|Happy indeed|Blessed are|May the Lord|In every age|I rejoiced)/i.test(p) && p.length < 130);
           
@@ -1607,17 +1613,14 @@
             `;
           }
 
-          // 3. Psalm stanzas
           if (/psalm/i.test(readingTitle) && p.length > 25) {
             return `<div class="psalm-stanza">${p.replace(/\n/g, '<br>')}</div>`;
           }
 
-          // 4. Reading liturgical theme / summary line
           if (citationFound && idx === 1 && p.length < 110 && !/^(The Lord|In those days|Jesus|Paul|Brothers|Hear the word|A reading)/i.test(p)) {
             return `<div class="reading-theme">${p}</div>`;
           }
 
-          // 5. Liturgical rubric line
           if (/^(A reading from|The beginning of)/i.test(p) && p.length < 90) {
             return `<div class="reading-rubric">${p}</div>`;
           }
@@ -1625,6 +1628,31 @@
           const withBreaks = p.replace(/\n/g, '<br>');
           return `<p class="reading-para">${withBreaks}</p>`;
         }).join('');
+
+        if (/gospel/i.test(readingTitle)) {
+          bodyHtml += `
+            <div class="reading-liturgical-conclusion">
+              <div class="versicle-call">The Gospel of the Lord.</div>
+              <div class="versicle-response">℟. Praise to you, Lord Jesus Christ.</div>
+            </div>
+          `;
+        } else if (/reading|patristic/i.test(readingTitle)) {
+          bodyHtml += `
+            <div class="reading-liturgical-conclusion">
+              <div class="versicle-call">The word of the Lord.</div>
+              <div class="versicle-response">℟. Thanks be to God.</div>
+            </div>
+          `;
+        } else if (/psalm/i.test(readingTitle) && detectedRefrain) {
+          bodyHtml += `
+            <div class="psalm-refrain-box" style="margin-top:20px;">
+              <span class="psalm-refrain-symbol">℟.</span>
+              <span class="psalm-refrain-text">${detectedRefrain}</span>
+            </div>
+          `;
+        }
+
+        return bodyHtml;
       }
 
       static formatExegesisHtml(rawText) {
@@ -1767,21 +1795,34 @@
 
         Router.fetchDailyReadingsInBackground();
 
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        if (AppState.todayReflection.date !== todayStr) {
+          AppState.todayReflection = {
+            date: todayStr,
+            readingRef: '',
+            q1: '',
+            q2: '',
+            q3: ''
+          };
+          localStorage.removeItem(STORAGE_KEY_TODAY_REFLECTION);
+        }
+
         let initialIntention = AppState.lastChosenIntention;
         if (!initialIntention && AppState.settings.predefinedIntentions.length > 0) {
           initialIntention = AppState.settings.predefinedIntentions[0].text;
         }
 
-        const currentRefl = {
+        const currentRefl = (AppState.todayReflection.date === todayStr) ? {
           q1: AppState.todayReflection.q1 || '',
           q2: AppState.todayReflection.q2 || '',
           q3: AppState.todayReflection.q3 || ''
-        };
+        } : { q1: '', q2: '', q3: '' };
 
         AppState.activeSession = {
           sessionId: 'sess_' + Date.now(),
           startTimestamp: Date.now(),
-          date: new Date().toISOString().split('T')[0],
+          date: todayStr,
           startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           durations: {
             scripture: customDurations.scripture || AppState.settings.scriptureDuration,
@@ -1816,7 +1857,14 @@
         const stored = localStorage.getItem(STORAGE_KEY_PRACTICE);
         if (stored) {
           try {
-            AppState.activeSession = JSON.parse(stored);
+            const session = JSON.parse(stored);
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (session.date !== todayStr || session.state === PracticeStates.CLOSING_SCREEN) {
+              localStorage.removeItem(STORAGE_KEY_PRACTICE);
+              AppState.activeSession = null;
+              return false;
+            }
+            AppState.activeSession = session;
             return true;
           } catch (e) {
             localStorage.removeItem(STORAGE_KEY_PRACTICE);
@@ -1865,7 +1913,6 @@
 
         const current = AppState.activeSession.state;
 
-        // Jesus Prayer: 1-minute countdown that softly auto-advances
         if (current === PracticeStates.PRAYER_JESUS) {
           const jpMins = (AppState.activeSession.durations && AppState.activeSession.durations.jesusPrayer) || 1;
           const jpSeconds = jpMins * 60;
@@ -1894,7 +1941,6 @@
           return;
         }
 
-        // Scripture, Reflection, Serenity & Personal Prayers: Count up calmly with dual stage and cumulative clocks
         if (current === PracticeStates.SCRIPTURE || 
             current === PracticeStates.REFLECTION || 
             current === PracticeStates.PRAYER_SERENITY || 
@@ -1917,7 +1963,6 @@
           return;
         }
 
-        // Stage 3: Fullscreen countdown timers
         if (current === PracticeStates.FOCUSED_MEDITATION) {
           PracticeMachine.launchFullscreenTimer(AppState.activeSession.durations.focused * 60, "Stage 3.1", "Focused Attention", false);
           return;
@@ -1936,7 +1981,6 @@
           stageEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         }
 
-        // Update Total Cumulative Session Elapsed Time
         const totalEl = document.getElementById('session-total-clock');
         if (totalEl && AppState.activeSession && AppState.activeSession.startTimestamp) {
           const totalElapsed = Math.max(0, Math.floor((Date.now() - AppState.activeSession.startTimestamp) / 1000));
@@ -2274,14 +2318,21 @@
       }
 
       static async checkSundayHomily() {
-        const today = new Date();
-        if (today.getDay() === 0 || today.getDay() === 6) {
-          const res = await ApiService.request('getSundayHomily');
-          if (res && res.success && res.homily) {
-            AppState.sundayHomily = res.homily;
-            if (AppState.currentRoute === 'today' || AppState.currentRoute === 'scripture_standalone') {
-              Router.render();
-            }
+        const cached = localStorage.getItem(STORAGE_KEY_HOMILY_CACHE);
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            AppState.sundayHomily = parsed;
+          } catch (e) {}
+        }
+
+        const res = await ApiService.request('getSundayHomily');
+        if (res && res.success && res.homily) {
+          AppState.sundayHomily = res.homily;
+          localStorage.setItem(STORAGE_KEY_HOMILY_CACHE, JSON.stringify(res.homily));
+          if (AppState.currentRoute === 'today' || AppState.currentRoute === 'scripture_standalone' ||
+             (AppState.activeSession && AppState.activeSession.state === PracticeStates.SCRIPTURE)) {
+            Router.render();
           }
         }
       }
@@ -2299,15 +2350,28 @@
 
       static async syncTodayReflectionFromBackend() {
         if (!AppState.authToken) return;
+        const todayStr = new Date().toISOString().split('T')[0];
         const res = await ApiService.request('getTodayReflection', {
-          dateKey: new Date().toISOString().split('T')[0]
+          dateKey: todayStr
         });
-        if (res.success && res.reflection && res.reflection.answers) {
-          AppState.todayReflection.q1 = res.reflection.answers.q1 || AppState.todayReflection.q1;
-          AppState.todayReflection.q2 = res.reflection.answers.q2 || AppState.todayReflection.q2;
-          AppState.todayReflection.q3 = res.reflection.answers.q3 || AppState.todayReflection.q3;
-          AppState.todayReflection.readingRef = res.reflection.readingRef || AppState.todayReflection.readingRef;
-          localStorage.setItem(STORAGE_KEY_TODAY_REFLECTION, JSON.stringify(AppState.todayReflection));
+        if (res.success) {
+          if (res.reflection && res.reflection.answers) {
+            AppState.todayReflection.q1 = res.reflection.answers.q1 || '';
+            AppState.todayReflection.q2 = res.reflection.answers.q2 || '';
+            AppState.todayReflection.q3 = res.reflection.answers.q3 || '';
+            AppState.todayReflection.readingRef = res.reflection.readingRef || '';
+            AppState.todayReflection.date = todayStr;
+            localStorage.setItem(STORAGE_KEY_TODAY_REFLECTION, JSON.stringify(AppState.todayReflection));
+          } else {
+            AppState.todayReflection = {
+              date: todayStr,
+              readingRef: '',
+              q1: '',
+              q2: '',
+              q3: ''
+            };
+            localStorage.removeItem(STORAGE_KEY_TODAY_REFLECTION);
+          }
         }
       }
 
@@ -2410,7 +2474,10 @@
               <div class="pocket-anchor-card" id="today-anchor-card" title="Your morning scripture anchor (Ruminatio)">
                 <div class="pocket-anchor-badge">
                   <span class="pocket-anchor-label">Pocket Anchor • Ruminatio</span>
-                  <button class="btn-quiet" id="btn-edit-anchor-inline" style="padding: 2px 6px; font-size: 0.76rem; color: var(--accent);">Edit</button>
+                  <div style="display:flex; gap:6px;">
+                    <button class="btn-quiet" id="btn-edit-anchor-inline" style="padding: 2px 6px; font-size: 0.76rem; color: var(--accent);">Edit</button>
+                    <button class="btn-quiet" id="btn-clear-anchor-inline" style="padding: 2px 6px; font-size: 0.76rem; color: var(--danger);">✕ Clear</button>
+                  </div>
                 </div>
                 <div class="pocket-anchor-verse">"${AppState.pocketAnchor.text}"</div>
                 ${AppState.pocketAnchor.source ? `<div class="pocket-anchor-source">— ${AppState.pocketAnchor.source}</div>` : ''}
@@ -2469,7 +2536,7 @@
             </button>
           </div>
 
-          ${(isSunday && AppState.sundayHomily) ? `
+          ${AppState.sundayHomily ? `
             <div class="card" style="border-left: 3px solid var(--accent);">
               <span class="status-banner">Sunday Homily • Bishop Barron</span>
               <h3>${AppState.sundayHomily.title}</h3>
@@ -2549,139 +2616,35 @@
 
         const setAnchorBtn = document.getElementById('btn-set-anchor-now');
         const editAnchorBtn = document.getElementById('btn-edit-anchor-inline');
+        const clearAnchorBtn = document.getElementById('btn-clear-anchor-inline');
+
         const handleAnchorPrompt = () => {
           const currentText = (AppState.pocketAnchor && AppState.pocketAnchor.text) || '';
           const newText = prompt("Enter a single Scripture phrase to hold in mind today (Ruminatio):", currentText);
-          if (newText && newText.trim()) {
-            AppState.pocketAnchor = {
-              text: newText.trim(),
-              source: (AppState.readings[AppState.currentReadingIndex] ? AppState.readings[AppState.currentReadingIndex].title : "Today's Word"),
-              date: new Date().toISOString().split('T')[0]
-            };
-            localStorage.setItem(STORAGE_KEY_POCKET_ANCHOR, JSON.stringify(AppState.pocketAnchor));
+          if (newText !== null) {
+            const trimmed = newText.trim();
+            if (trimmed) {
+              AppState.pocketAnchor = {
+                text: trimmed,
+                source: (AppState.readings[AppState.currentReadingIndex] ? AppState.readings[AppState.currentReadingIndex].title : "Today's Word"),
+                date: new Date().toISOString().split('T')[0]
+              };
+              localStorage.setItem(STORAGE_KEY_POCKET_ANCHOR, JSON.stringify(AppState.pocketAnchor));
+            } else {
+              AppState.pocketAnchor = null;
+              localStorage.removeItem(STORAGE_KEY_POCKET_ANCHOR);
+            }
             Router.render();
           }
         };
 
         if (setAnchorBtn) setAnchorBtn.addEventListener('click', handleAnchorPrompt);
         if (editAnchorBtn) editAnchorBtn.addEventListener('click', handleAnchorPrompt);
-      }
-
-      static renderStandaloneIntentionScreen() {
-        const predefined = AppState.settings.predefinedIntentions || [];
-        const persistentIntention = AppState.lastChosenIntention || (predefined[0] ? predefined[0].text : '');
-
-        return `
-          <div class="card">
-            <div class="stage-header-bar">
-              <span class="stage-chip">Daily Intention</span>
-              <div></div>
-              <button class="stage-exit-btn" id="btn-intentions-back">← Back to Today</button>
-            </div>
-
-            <h2>Your Implementation Intention</h2>
-            <p>Select your active intention, drag or use arrows to prioritize, or add a custom prompt.</p>
-
-            <div id="standalone-intentions-container" style="margin: 18px 0;">
-              ${predefined.map((p, idx) => {
-                const isSelected = (p.text === persistentIntention);
-                return `
-                  <div class="intention-item ${isSelected ? 'selected' : ''}" draggable="true" data-index="${idx}" data-id="${p.id}" data-text="${encodeURIComponent(p.text)}">
-                    <span class="intention-drag-handle" title="Drag to reorder">⠿</span>
-                    <div class="intention-text-wrap">${p.text}</div>
-                    <div class="intention-actions">
-                      <button class="btn-item-action btn-move-up" data-idx="${idx}" title="Move up">▲</button>
-                      <button class="btn-item-action btn-move-down" data-idx="${idx}" title="Move down">▼</button>
-                      <button class="btn-item-action btn-edit-intention" data-id="${p.id}" title="Edit">✏️</button>
-                      <button class="btn-item-action btn-del-intention" data-id="${p.id}" title="Delete">🗑️</button>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-
-            <div class="input-group" style="margin-top: 18px;">
-              <label>Add new intention</label>
-              <div class="intention-creator-row">
-                <input type="text" id="standalone-new-intention-input" placeholder="When I notice myself..., I will...">
-                <button class="btn btn-secondary btn-add" id="btn-standalone-add-intention">Add</button>
-              </div>
-            </div>
-
-            <button class="btn btn-primary" id="btn-save-chosen-intention" style="margin-top: 12px;">Set as Today's Intention</button>
-          </div>
-        `;
-      }
-
-      static bindStandaloneIntentionEvents() {
-        const backBtn = document.getElementById('btn-intentions-back');
-        if (backBtn) backBtn.addEventListener('click', () => Router.navigate('today'));
-
-        document.querySelectorAll('#standalone-intentions-container .intention-item').forEach(item => {
-          item.addEventListener('click', (e) => {
-            if (e.target.classList.contains('btn-item-action') || e.target.classList.contains('intention-drag-handle')) return;
-            document.querySelectorAll('#standalone-intentions-container .intention-item').forEach(i => i.classList.remove('selected'));
-            item.classList.add('selected');
-            const txt = decodeURIComponent(item.dataset.text);
-            AppState.lastChosenIntention = txt;
-            localStorage.setItem(STORAGE_KEY_LAST_INTENTION, txt);
-          });
-        });
-
-        document.querySelectorAll('.btn-move-up').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const idx = parseInt(btn.dataset.idx, 10);
-            if (idx > 0) {
-              const list = AppState.settings.predefinedIntentions;
-              const temp = list[idx];
-              list[idx] = list[idx - 1];
-              list[idx - 1] = temp;
-              localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(AppState.settings));
-              Router.render();
-            }
-          });
-        });
-
-        document.querySelectorAll('.btn-move-down').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const idx = parseInt(btn.dataset.idx, 10);
-            const list = AppState.settings.predefinedIntentions;
-            if (idx < list.length - 1) {
-              const temp = list[idx];
-              list[idx] = list[idx + 1];
-              list[idx + 1] = temp;
-              localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(AppState.settings));
-              Router.render();
-            }
-          });
-        });
-
-        const addBtn = document.getElementById('btn-standalone-add-intention');
-        if (addBtn) {
-          addBtn.addEventListener('click', () => {
-            const input = document.getElementById('standalone-new-intention-input');
-            const val = input.value.trim();
-            if (!val) return;
-            const newId = 'p_' + Date.now();
-            AppState.settings.predefinedIntentions.push({ id: newId, text: val });
-            AppState.lastChosenIntention = val;
-            localStorage.setItem(STORAGE_KEY_LAST_INTENTION, val);
-            localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(AppState.settings));
+        if (clearAnchorBtn) {
+          clearAnchorBtn.addEventListener('click', () => {
+            AppState.pocketAnchor = null;
+            localStorage.removeItem(STORAGE_KEY_POCKET_ANCHOR);
             Router.render();
-          });
-        }
-
-        const saveChoiceBtn = document.getElementById('btn-save-chosen-intention');
-        if (saveChoiceBtn) {
-          saveChoiceBtn.addEventListener('click', () => {
-            const selected = document.querySelector('#standalone-intentions-container .intention-item.selected');
-            if (selected) {
-              AppState.lastChosenIntention = decodeURIComponent(selected.dataset.text);
-              localStorage.setItem(STORAGE_KEY_LAST_INTENTION, AppState.lastChosenIntention);
-            }
-            ModalService.showAlert("Intention updated for today.", () => Router.navigate('today'));
           });
         }
       }
@@ -2725,7 +2688,6 @@
             <h3>${current.title}</h3>
             <div class="reading-content-container">${formattedHtml}</div>
 
-            <!-- Pocket Anchor Capture Module -->
             <div class="pocket-anchor-capture-box">
               <div class="pocket-anchor-capture-title">
                 <span>📌</span> Pocket Anchor (Ruminatio)
@@ -2734,6 +2696,7 @@
               <div class="pocket-anchor-capture-row">
                 <input type="text" id="standalone-anchor-input" placeholder="e.g. The Lord is my shepherd..." value="${currentAnchorText}">
                 <button class="btn btn-primary" id="btn-save-standalone-anchor">Set Anchor</button>
+                ${currentAnchorText ? `<button class="btn btn-quiet" id="btn-clear-standalone-anchor" style="color:var(--danger); padding:0 8px;" title="Clear anchor">✕</button>` : ''}
               </div>
             </div>
 
@@ -2775,7 +2738,6 @@
           });
         });
 
-        // Auto-fill anchor input when user highlights text on screen
         document.addEventListener('selectionchange', () => {
           const selection = window.getSelection().toString().trim();
           const anchorInput = document.getElementById('standalone-anchor-input') || document.getElementById('practice-anchor-input');
@@ -2800,6 +2762,16 @@
             localStorage.setItem(STORAGE_KEY_POCKET_ANCHOR, JSON.stringify(AppState.pocketAnchor));
             saveAnchorBtn.textContent = "Saved ✓";
             setTimeout(() => { if (saveAnchorBtn) saveAnchorBtn.textContent = "Set Anchor"; }, 2000);
+            Router.render();
+          });
+        }
+
+        const clearStandaloneAnchorBtn = document.getElementById('btn-clear-standalone-anchor');
+        if (clearStandaloneAnchorBtn) {
+          clearStandaloneAnchorBtn.addEventListener('click', () => {
+            AppState.pocketAnchor = null;
+            localStorage.removeItem(STORAGE_KEY_POCKET_ANCHOR);
+            Router.render();
           });
         }
 
@@ -2813,7 +2785,7 @@
               const current = AppState.readings[AppState.currentReadingIndex];
               const textToRead = `${current.title}. ${current.content}`;
               speakBtn.textContent = '⏹ Stop Read Back';
-              sound.speak(textToRead, () => {
+              sound.speak(TextFormatter.sanitizeForSpeech(textToRead, current.title), () => {
                 const btnRef = document.getElementById('btn-standalone-read-aloud');
                 if (btnRef) btnRef.textContent = '🔊 Read Aloud';
               });
@@ -2906,7 +2878,7 @@
 
             <div class="input-group">
               <label>3. How might I live this today?</label>
-              <textarea id="standalone-q3" placeholder="A concrete posture, orientation, or attitude for the day...">${refl.q3 || ''}</textarea>
+              <textarea id="standalone-q3" placeholder="A single concrete posture, orientation, or attitude for the day...">${refl.q3 || ''}</textarea>
             </div>
 
             <div class="btn-group">
@@ -3035,7 +3007,6 @@
         const dateKey = `${todayStr}_${current.id}`;
         const cached = AppState.exegesisCache[dateKey];
         const isGenerating = ExegesisManager.isPending(dateKey);
-        const isSunday = new Date().getDay() === 0;
         const currentAnchorText = (AppState.pocketAnchor && AppState.pocketAnchor.text) || '';
 
         return `
@@ -3067,7 +3038,7 @@
               </button>
             </div>
 
-            ${(isSunday && AppState.sundayHomily) ? `
+            ${AppState.sundayHomily ? `
               <div style="background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 12px 14px; border-radius: 0 var(--radius) var(--radius) 0; margin-bottom: 18px;">
                 <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; margin-bottom: 4px;">
                   Sunday Homily • Bishop Barron
@@ -3086,7 +3057,6 @@
             <h3>${current.title}</h3>
             <div class="reading-content-container">${formattedHtml}</div>
 
-            <!-- Pocket Anchor Capture Module during Stage 1 -->
             <div class="pocket-anchor-capture-box">
               <div class="pocket-anchor-capture-title">
                 <span>📌</span> Pocket Anchor (Ruminatio)
@@ -3095,6 +3065,7 @@
               <div class="pocket-anchor-capture-row">
                 <input type="text" id="practice-anchor-input" placeholder="e.g. The Lord is my shepherd..." value="${currentAnchorText}">
                 <button class="btn btn-primary" id="btn-save-practice-anchor">Set Anchor</button>
+                ${currentAnchorText ? `<button class="btn btn-quiet" id="btn-clear-practice-anchor" style="color:var(--danger); padding:0 8px;" title="Clear anchor">✕</button>` : ''}
               </div>
             </div>
 
@@ -3382,6 +3353,17 @@ ${content}
           });
         }
 
+        const clearPracticeAnchorBtn = document.getElementById('btn-clear-practice-anchor');
+        if (clearPracticeAnchorBtn) {
+          clearPracticeAnchorBtn.addEventListener('click', () => {
+            AppState.pocketAnchor = null;
+            localStorage.removeItem(STORAGE_KEY_POCKET_ANCHOR);
+            const input = document.getElementById('practice-anchor-input');
+            if (input) input.value = '';
+            clearPracticeAnchorBtn.classList.add('hidden');
+          });
+        }
+
         const speakBtn = document.getElementById('btn-read-aloud');
         if (speakBtn) {
           speakBtn.addEventListener('click', () => {
@@ -3392,7 +3374,7 @@ ${content}
               const current = AppState.readings[AppState.currentReadingIndex];
               const textToRead = `${current.title}. ${current.content}`;
               speakBtn.textContent = '⏹ Stop Read Back';
-              sound.speak(textToRead, () => {
+              sound.speak(TextFormatter.sanitizeForSpeech(textToRead, current.title), () => {
                 const btnRef = document.getElementById('btn-read-aloud');
                 if (btnRef) btnRef.textContent = '🔊 Read Aloud';
               });
@@ -3739,9 +3721,16 @@ ${content}
 
         if (res.success && res.history) {
           const h = res.history;
-          const weekChange = (h.thisWeek && h.thisWeek.practices !== undefined)
-            ? (h.thisWeek.practices - (h.thisWeek.previous || 0)) : 0;
-          const weekSign = weekChange > 0 ? `+${weekChange}` : `${weekChange}`;
+          
+          const thisWeekMin = (h.thisWeek && h.thisWeek.minutes !== undefined) ? h.thisWeek.minutes : 0;
+          const lastWeekMin = (h.thisWeek && h.thisWeek.previousMinutes !== undefined) ? h.thisWeek.previousMinutes : 0;
+          const weekDiff = thisWeekMin - lastWeekMin;
+          const weekDiffSign = weekDiff >= 0 ? `+${weekDiff} min` : `${weekDiff} min`;
+
+          const thisMonthMin = (h.thisMonth && h.thisMonth.minutes !== undefined) ? h.thisMonth.minutes : 0;
+          const lastMonthMin = (h.thisMonth && h.thisMonth.previousMinutes !== undefined) ? h.thisMonth.previousMinutes : 0;
+          const monthDiff = thisMonthMin - lastMonthMin;
+          const monthDiffSign = monthDiff >= 0 ? `+${monthDiff} min` : `${monthDiff} min`;
 
           container.innerHTML = `
             <div class="stats-trio">
@@ -3763,15 +3752,15 @@ ${content}
               <div class="comparison-card">
                 <div class="comparison-title">This Week</div>
                 <div class="comparison-val">
-                  ${h.thisWeek ? h.thisWeek.practices : 0}
-                  <span class="comparison-sub">vs ${h.thisWeek ? h.thisWeek.previous : 0} last week (${weekSign})</span>
+                  ${thisWeekMin} <span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);">min</span>
+                  <span class="comparison-sub">vs ${lastWeekMin} min last week (${weekDiffSign})</span>
                 </div>
               </div>
               <div class="comparison-card">
                 <div class="comparison-title">This Month</div>
                 <div class="comparison-val">
-                  ${h.thisMonth ? h.thisMonth.practices : 0}
-                  <span class="comparison-sub">vs ${h.thisMonth ? h.thisMonth.previous : 0} last month</span>
+                  ${thisMonthMin} <span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);">min</span>
+                  <span class="comparison-sub">vs ${lastMonthMin} min last month (${monthDiffSign})</span>
                 </div>
               </div>
             </div>
@@ -4054,6 +4043,8 @@ ${content}
      * Bootstrapping
      */
     window.addEventListener('DOMContentLoaded', async () => {
+      const todayStr = new Date().toISOString().split('T')[0];
+
       const savedSettings = localStorage.getItem(STORAGE_KEY_SETTINGS);
       if (savedSettings) {
         try { Object.assign(AppState.settings, JSON.parse(savedSettings)); } catch (e) {}
@@ -4068,11 +4059,15 @@ ${content}
       if (savedAnchor) {
         try {
           const parsedAnchor = JSON.parse(savedAnchor);
-          const todayStr = new Date().toISOString().split('T')[0];
           if (parsedAnchor.date === todayStr) {
             AppState.pocketAnchor = parsedAnchor;
+          } else {
+            localStorage.removeItem(STORAGE_KEY_POCKET_ANCHOR);
+            AppState.pocketAnchor = null;
           }
-        } catch (e) {}
+        } catch (e) {
+          localStorage.removeItem(STORAGE_KEY_POCKET_ANCHOR);
+        }
       }
 
       const savedCache = localStorage.getItem(STORAGE_KEY_EXEGESIS_CACHE);
@@ -4084,11 +4079,21 @@ ${content}
       if (savedReflection) {
         try {
           const parsed = JSON.parse(savedReflection);
-          const todayStr = new Date().toISOString().split('T')[0];
           if (parsed.date === todayStr) {
             Object.assign(AppState.todayReflection, parsed);
+          } else {
+            localStorage.removeItem(STORAGE_KEY_TODAY_REFLECTION);
+            AppState.todayReflection = {
+              date: todayStr,
+              readingRef: '',
+              q1: '',
+              q2: '',
+              q3: ''
+            };
           }
-        } catch (e) {}
+        } catch (e) {
+          localStorage.removeItem(STORAGE_KEY_TODAY_REFLECTION);
+        }
       }
 
       const savedAuth = localStorage.getItem(STORAGE_KEY_AUTH);
