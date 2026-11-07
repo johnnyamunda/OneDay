@@ -1908,7 +1908,10 @@
           if (res && res.success) {
             if (Array.isArray(res.readings) && res.readings.length > 0) {
               AppState.readings = res.readings;
-              localStorage.setItem(STORAGE_KEY_READINGS_CACHE, JSON.stringify(res.readings));
+              if (AppState.isWeekend && !AppState.readings.some(r => r.id === 'patristic')) {
+                AppState.readings.push(getRotatingPatristicClient());
+              }
+              localStorage.setItem(STORAGE_KEY_READINGS_CACHE, JSON.stringify(AppState.readings));
             }
             if (res.saint) AppState.saintOfTheDay = res.saint;
             if (res.exegeses && typeof res.exegeses === 'object') {
@@ -2173,7 +2176,10 @@
 
             <ul class="flow-list">
               <li class="flow-item clickable-flow" id="flow-open-scripture">
-                <span>1. Scripture & Reflection</span>
+                <div style="display:flex; flex-direction:column;">
+                  <span>1. Scripture & Reflection</span>
+                  ${AppState.isWeekend ? `<span style="font-size: 0.75rem; color: var(--accent); font-weight: 600;">✦ Mass & Patristic Readings active</span>` : ''}
+                </div>
                 <span style="color: var(--accent); font-size: 0.88rem;">Open readings ↗</span>
               </li>
               <li class="flow-item">
@@ -2344,6 +2350,9 @@
       // VIEW: STAGE 1 SCRIPTURE
       // ---------------------------------------------------------
       static renderStage1Scripture() {
+        if (AppState.isWeekend && !AppState.readings.some(r => r.id === 'patristic')) {
+          AppState.readings.push(getRotatingPatristicClient());
+        }
         const readings = AppState.readings;
         const current = readings[AppState.currentReadingIndex] || readings[0];
         const formattedHtml = TextFormatter.formatReadingHtml(current.content, current.title);
@@ -2944,6 +2953,9 @@
       // VIEW: STANDALONE SCRIPTURE & EXEGESIS
       // ---------------------------------------------------------
       static renderStandaloneScriptureScreen() {
+        if (AppState.isWeekend && !AppState.readings.some(r => r.id === 'patristic')) {
+          AppState.readings.push(getRotatingPatristicClient());
+        }
         const readings = AppState.readings || [];
         const current = readings[AppState.currentReadingIndex] || readings[0];
         const formattedHtml = current ? TextFormatter.formatReadingHtml(current.content, current.title) : '';
@@ -3403,16 +3415,62 @@
           }
 
           const h = res.history;
-          const thisWeekMins = (h.thisWeek && typeof h.thisWeek.minutes === 'number') ? h.thisWeek.minutes : 0;
-          const prevWeekMins = (h.thisWeek && typeof h.thisWeek.previousMinutes === 'number') ? h.thisWeek.previousMinutes : 0;
+          const recentSessions = Array.isArray(h.recentSessions) ? h.recentSessions : [];
+
+          // Compute week and month minutes directly from recent sessions for guaranteed accuracy
+          const now = new Date();
+          const dow = (now.getDay() + 6) % 7; // Monday = 0, Sunday = 6
+          const startOfThisWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
+          startOfThisWeek.setHours(0, 0, 0, 0);
+
+          const startOfLastWeek = new Date(startOfThisWeek);
+          startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+
+          const endOfLastWeek = new Date(startOfThisWeek);
+          endOfLastWeek.setMilliseconds(-1);
+
+          const thisMonthPrefix = AppState.todayStr.slice(0, 7);
+          const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          const lastMonthPrefix = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
+
+          let clientThisWeek = 0;
+          let clientLastWeek = 0;
+          let clientThisMonth = 0;
+          let clientLastMonth = 0;
+
+          recentSessions.forEach(s => {
+            const dur = Number(s.duration) || 0;
+            const sDate = new Date(s.date + 'T12:00:00');
+            if (!isNaN(sDate.getTime())) {
+              if (sDate >= startOfThisWeek) {
+                clientThisWeek += dur;
+              } else if (sDate >= startOfLastWeek && sDate <= endOfLastWeek) {
+                clientLastWeek += dur;
+              }
+            }
+
+            if (typeof s.date === 'string') {
+              if (s.date.startsWith(thisMonthPrefix)) {
+                clientThisMonth += dur;
+              } else if (s.date.startsWith(lastMonthPrefix)) {
+                clientLastMonth += dur;
+              }
+            }
+          });
+
+          const serverThisWeek = (h.thisWeek && typeof h.thisWeek.minutes === 'number') ? h.thisWeek.minutes : 0;
+          const serverLastWeek = (h.thisWeek && typeof h.thisWeek.previousMinutes === 'number') ? h.thisWeek.previousMinutes : 0;
+          const thisWeekMins = clientThisWeek || serverThisWeek;
+          const prevWeekMins = clientLastWeek || serverLastWeek;
           const weekDiff = thisWeekMins - prevWeekMins;
 
-          const thisMonthMins = (h.thisMonth && typeof h.thisMonth.minutes === 'number') ? h.thisMonth.minutes : 0;
-          const prevMonthMins = (h.thisMonth && typeof h.thisMonth.previousMinutes === 'number') ? h.thisMonth.previousMinutes : 0;
+          const serverThisMonth = (h.thisMonth && typeof h.thisMonth.minutes === 'number') ? h.thisMonth.minutes : 0;
+          const serverLastMonth = (h.thisMonth && typeof h.thisMonth.previousMinutes === 'number') ? h.thisMonth.previousMinutes : 0;
+          const thisMonthMins = clientThisMonth || serverThisMonth;
+          const prevMonthMins = clientLastMonth || serverLastMonth;
           const monthDiff = thisMonthMins - prevMonthMins;
 
           const legacy = h.legacy || { practices: 0, minutes: 0, streak: 0, lastDate: '' };
-          const recentSessions = Array.isArray(h.recentSessions) ? h.recentSessions : [];
 
           container.innerHTML = `
             <div class="stats-trio">
